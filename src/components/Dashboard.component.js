@@ -5,32 +5,7 @@ import axios from 'axios'
 
 
 
-// const TopicList = (props) =>{
 
-// 	var content
-// 	const [topicList, setTopicList] = useState(null)
-	
-// 	useEffect(()=> {
-
-// 		console.log("data at TopicList:", props.dayList)
-
-// 	})
-// 	let Topics = <p>Loading</p>
-// 	if(props.dayList){
-// 		Topics = props.dayList.map((topic, index) => {
-// 			return(
-// 				<div key={index} className="container-fluid p-1 my-1 border">
-// 					<p className="text-danger">{topic.topic}</p>
-// 					<p className="font-weight-bold">{topic.video}</p>
-// 					<p>{topic.time} </p>
-// 				</div>
-// 			)
-// 		}) 
-// 	}
-// 	return <Topics />
-
-		
-// }
 
 const Topic = (props) => {
 
@@ -62,10 +37,10 @@ const TopicList = (props) =>{
 						topic={topic.topic} 
 						video={topic.video} 
 						time={topic.time} 
+						key={index}
 					/> 
 				})	
 			}			
-			
 		</div>
 		)
 
@@ -74,12 +49,14 @@ const TopicList = (props) =>{
 
 const Dashboard = (props) => {
 
-	const [cnHours, changeCnHours] = useState({'secs' :1800})
+	const [cnHours, changeCnHours] = useState({'secs' :3600})
 	const [date, changeDate] = useState(new Date())
 	const [cnData, changeCnData] = useState('')
 	const [startDate, changeStartDate] = useState(new Date('9/1/2020'))
+	const [endDate, changeEndDate] = useState(new Date())
 	const [topicsDate, changeTopicsDate] = useState(0)
 	const [dayList, changeDayList] = useState()
+	const [currentSub, changeCurrentSub] = useState('Computer Networks')
 
 
 	useEffect(() => {
@@ -105,11 +82,12 @@ const Dashboard = (props) => {
 	      })
 	}, [])
 
+	function addDays(date, days) {
+		  var result = new Date(date);
+		  result.setDate(result.getDate() + days);
+		  return result;
+		}
 
-	const buttonHandler = () => {
-		console.log(cnData)
-		update_List(cnData, topicsDate)
-	}
 
 	const update_List = (cnDataList, topicIndex) => {
 		var cnDataObj = {}
@@ -120,7 +98,7 @@ const Dashboard = (props) => {
 		for(var x=0; x<cnDataList.length; x+=1){
 
 			if(time > cnHours.secs){
-				cnDataObj[days].push(cnDataList[x])
+				x -= 1
 				time = 0
 				days += 1
 				cnDataObj[days] = []
@@ -131,12 +109,42 @@ const Dashboard = (props) => {
 			}
 
 		}
+		changeEndDate(addDays(startDate, days))
 
 		console.log('day: ', topicIndex, cnDataObj[topicIndex]) //topics for selected date
 		changeDayList(cnDataObj[topicIndex])
 		// console.log(cnDataObj) All topics
 	}
 
+	const changeSubject = (event) => {
+
+		document.getElementById('spinner').style.display = 'block'
+	    document.getElementById('topic-list-box').style.display = 'none'
+		let subject = event.target.id
+		console.log(event.target.innerHTML)
+		changeCurrentSub(event.target.innerHTML)
+		axios.get('https://gate-plan.herokuapp.com/plan/'+subject)
+	      .then(res => {
+	      	if(res.status === 200){
+	      		
+	      		console.log(res)
+	      		document.getElementById('spinner').style.display = 'none'
+	      		document.getElementById('topic-list-box').style.display = 'block'
+	      		const data = res.data.data;
+	      		changeCnData(data)
+	      		//To render the list first time after fetching
+	      		var Difference_In_Time = new Date().getTime() - startDate.getTime(); 
+				var Difference_In_Days = Math.ceil(Difference_In_Time / (1000 * 3600 * 24));
+				//update_List(the whole list, the index of the list item)
+
+	      		update_List(res.data.data, parseInt(Difference_In_Days))
+	      		changeTopicsDate(parseInt(Difference_In_Days))
+	      	} else {
+				document.getElementById('topic-list').innerHTML = 'Some error occured'	      		
+	      	}
+	        
+	      })
+	}
 
 	const cnSliderHandler = () => {
 		changeCnHours({'secs' : parseInt(document.getElementById('slide').value)})
@@ -162,17 +170,24 @@ const Dashboard = (props) => {
 	return (
 		<div>
 		
-			<div className="container  py-4 my-2 px-0">
+			<div className="container  py-4 my-2  mx-auto text-center">
 				
 				<h1> Dashboard </h1>
-				<h4> Computer Networks : {(cnHours.secs/(60*60)).toPrecision(2)} hours  </h4>
-				<div className="container-fluid p-2 row">
+				<button id="cn" className="btn btn-danger text-white m-1" onClick={changeSubject}> Computer Networks </button>
+				<button id="pds" className="btn btn-danger text-white m-1" onClick={changeSubject}> Programming and Data Structures</button>
+				<button id="db" className="btn btn-danger text-white m-1" onClick={changeSubject}> Database </button>
+				<h4> {currentSub} : {(cnHours.secs/(60*60)).toPrecision(2)} hours  </h4>
+				<p>Start Date:<span className="font-weight-bold text-success"> {startDate.toDateString()} </span> | End Date: <span className="font-weight-bold text-danger"> {endDate.toDateString()} </span> </p>
+				<div className="container-fluid mx-auto row text-center">
 					<div className="container-fluid p-2 col-12 col-md-6 border">
 						<h1> Day </h1>
 						<h3> {date.toDateString()} </h3>
 
 						<div id="topic-list" className="text-center p-2">
-							<div id="spinner" className="spinner-border mt-5"></div>
+							<div id="spinner" className="text-center">
+								<div className="spinner-border mt-5"></div>
+							</div>
+							
 							<div id='topic-list-box' style={{display: 'none'}}>
 								{ dayList?
 									<TopicList dayList={dayList} />:
@@ -185,7 +200,9 @@ const Dashboard = (props) => {
 						<h1> Calendar </h1>
 						<Calendar
 				          onChange={onDateChange}
-				          value={date}
+				          value={[startDate]}
+				          // tileContent={({ activeStartDate, date, view }) => view === 'month' && date.getDate() === new Date().getDate() ? <p>It's Sunday!</p> : null}
+			         	  tileClassName={({ activeStartDate, date, view }) => view === 'month' && date.getTime() === endDate.getTime() ? 'end-date' : null}
 				        />
 	        		</div>
         		</div>
@@ -196,10 +213,8 @@ const Dashboard = (props) => {
 				<label htmlFor="customRange">Select Hours per day for computer networks</label>
 				<h5> { cnHours.secs } seconds </h5>
 				<h5> {(cnHours.secs/(60*60)).toPrecision(2)} hours  </h5>
-					<input onChange={cnSliderHandler} id='slide' type="range" className="custom-range" min="1800" max="10800" name="points1" />
-				
-
-					
+					<input onChange={cnSliderHandler} id='slide' type="range" className="custom-range" min="3600" max="10800" name="points1" />
+		
 			</div>
 	
 		</div>
