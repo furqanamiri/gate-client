@@ -20,7 +20,7 @@ const Topic = (props) => {
 		let url = event.target.id 
 		url += props.status=='y'?'n':'y'
 
-		axios.get('https://gate-plan.herokuapp.com/plan/change/'+url)
+		axios.get('https://furqan-gate.herokuapp.com/plan/change/'+url)
 		.then(res => {
 			alert(res.data)
 			// var span = document.getElementById('span'+props.videoIndex).innerHTML
@@ -87,7 +87,7 @@ const Dashboard = (props) => {
 	const [shortSub, changeShortSub] = useState('cn')
 
 	useEffect(() => {
-		axios.get(`https://gate-plan.herokuapp.com/plan/cn`)
+		axios.get(`https://furqan-gate.herokuapp.com/plan/cn`)
 	      .then(res => {
 	      	if(res.status === 200){
 	      		console.log(res)
@@ -154,7 +154,7 @@ const Dashboard = (props) => {
 		let subject = event.target.id
 		console.log(event.target.innerHTML)
 		changeCurrentSub(event.target.innerHTML)
-		axios.get('https://gate-plan.herokuapp.com/plan/'+subject)
+		axios.get('https://furqan-gate.herokuapp.com/plan/'+subject)
 	      .then(res => {
 	      	if(res.status === 200){
 	      		
