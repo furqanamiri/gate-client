@@ -73,7 +73,8 @@ const Dashboard = (props) => {
 				var Difference_In_Days = Math.ceil(Difference_In_Time / (1000 * 3600 * 24));
 				//update_List(the whole list, the index of the list item)
 
-	      		update_List(res.data.data, parseInt(Difference_In_Days))
+	      		update_List(res.data.data, parseInt(Difference_In_Days) - 1)
+
 	      		changeTopicsDate(parseInt(Difference_In_Days))
 	      	} else {
 				document.getElementById('topic-list').innerHTML = 'Some error occured'	      		
@@ -97,16 +98,18 @@ const Dashboard = (props) => {
 		
 		for(var x=0; x<cnDataList.length; x+=1){
 
-			if(time > cnHours.secs){
-				x -= 1
-				time = 0
-				days += 1
-				cnDataObj[days] = []
-			} else {
-				cnDataObj[days].push(cnDataList[x])
-				time += parseInt(cnDataList[x]['seconds'])
-				// console.log(time)
-			}
+			
+				if(time > cnHours.secs){
+					x -= 1
+					time = 0
+					days += 1
+					cnDataObj[days] = []
+				} else {
+					cnDataObj[days].push(cnDataList[x])
+					time += parseInt(cnDataList[x]['seconds'])
+					// console.log(time)
+				}
+			
 
 		}
 		changeEndDate(addDays(startDate, days))
@@ -170,12 +173,13 @@ const Dashboard = (props) => {
 	return (
 		<div>
 		
-			<div className="container  py-4 my-2  mx-auto text-center">
+			<div className="container  py-2 mt-2  mx-auto text-center">
 				
-				<h1> Dashboard </h1>
-				<button id="cn" className="btn btn-danger text-white m-1" onClick={changeSubject}> Computer Networks </button>
-				<button id="pds" className="btn btn-danger text-white m-1" onClick={changeSubject}> Programming and Data Structures</button>
-				<button id="db" className="btn btn-danger text-white m-1" onClick={changeSubject}> Database </button>
+				<h1> Dashboard : Aniket's Gate Plan </h1>
+				<p> Phase 1 [Sep 2020 - Dec 2020] </p>
+				<button id="cn" className="btn btn-danger text-white m-1 font-weight-bold" onClick={changeSubject}> Computer Networks </button>
+				<button id="pds" className="btn btn-danger text-white m-1 font-weight-bold" onClick={changeSubject}> Programming and Data Structures</button>
+				<button id="db" className="btn btn-danger text-white m-1 font-weight-bold" onClick={changeSubject}> Database </button>
 				<h4> {currentSub} : {(cnHours.secs/(60*60)).toPrecision(2)} hours  </h4>
 				<p>Start Date:<span className="font-weight-bold text-success"> {startDate.toDateString()} </span> | End Date: <span className="font-weight-bold text-danger"> {endDate.toDateString()} </span> </p>
 				<div className="container-fluid mx-auto row text-center">
@@ -197,18 +201,18 @@ const Dashboard = (props) => {
 						</div>
 					</div>
 					<div className="container-fluid border p-2 col-12 col-md-6 text-center">
-						<h1> Calendar </h1>
+						<h1 className="mb-4"> Calendar </h1>
 						<Calendar
-				          onChange={onDateChange}
-				          value={[startDate]}
-				          // tileContent={({ activeStartDate, date, view }) => view === 'month' && date.getDate() === new Date().getDate() ? <p>It's Sunday!</p> : null}
-			         	  tileClassName={({ activeStartDate, date, view }) => view === 'month' && date.getTime() === endDate.getTime() ? 'end-date' : null}
+							className="mt-5 py-2"
+				          	onChange={onDateChange}
+				          	value={[startDate]}
+			         	  	tileClassName={({ activeStartDate, date, view }) => view === 'month' && date.getTime() === endDate.getTime() ? 'end-date' : null}
 				        />
 	        		</div>
         		</div>
 			</div>
 
-			<div className="container border p-4 my-2 mb-5">
+			<div className="container border p-4 my-2 mb-5" style={{display: 'none'}}>
 				<h1> Configure</h1>
 				<label htmlFor="customRange">Select Hours per day for computer networks</label>
 				<h5> { cnHours.secs } seconds </h5>
