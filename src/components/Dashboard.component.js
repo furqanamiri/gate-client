@@ -9,11 +9,35 @@ import axios from 'axios'
 
 const Topic = (props) => {
 
+	useEffect(() => {
+		// console.log(props)
+		document.getElementById('span'+props.videoIndex).innerHTML = props.status
+	})
+	
+
+	const statusHandler = (event) => {
+		console.log(event.target.id)
+		let url = event.target.id 
+		url += props.status=='y'?'n':'y'
+
+		axios.get('https://gate-plan.herokuapp.com/plan/change/'+url)
+		.then(res => {
+			alert(res.data)
+			// var span = document.getElementById('span'+props.videoIndex).innerHTML
+			// span = span=='y'?'n':'y' 
+			document.getElementById(props.sub).click()
+		})
+	 
+	}
+
+
 	return(
 		<div key={props.index} className="container-fluid p-1 my-1 border">
 			<p className="text-danger">{props.topic}</p>
 			<p className="font-weight-bold">{props.video}</p>
 			<p>{props.time} </p>
+			<p> status: <span id={'span'+props.videoIndex}> </span> <span> <button class="btn btn-primary m-1 font-weight-bold" id={props.sub +'/' + props.videoIndex + '/' } onClick={statusHandler}>Change status </button></span> </p>
+			
 		</div>
 		)
 }
@@ -25,7 +49,7 @@ const TopicList = (props) =>{
 	
 	useEffect(()=> {
 
-		console.log("data at TopicList:", props.dayList)
+		// console.log("data at TopicList:", props.dayList)
 
 	})
 	
@@ -38,6 +62,9 @@ const TopicList = (props) =>{
 						video={topic.video} 
 						time={topic.time} 
 						key={index}
+						videoIndex={topic.videoIndex}
+						status={topic.status}
+						sub={props.subject}
 					/> 
 				})	
 			}			
@@ -57,7 +84,7 @@ const Dashboard = (props) => {
 	const [topicsDate, changeTopicsDate] = useState(0)
 	const [dayList, changeDayList] = useState()
 	const [currentSub, changeCurrentSub] = useState('Computer Networks')
-
+	const [shortSub, changeShortSub] = useState('cn')
 
 	useEffect(() => {
 		axios.get(`https://gate-plan.herokuapp.com/plan/cn`)
@@ -68,6 +95,7 @@ const Dashboard = (props) => {
 	      		document.getElementById('topic-list-box').style.display = 'block'
 	      		const data = res.data.data;
 	      		changeCnData(data)
+	      		changeShortSub(res.data.subject)
 	      		//To render the list first time after fetching
 	      		var Difference_In_Time = new Date().getTime() - startDate.getTime(); 
 				var Difference_In_Days = Math.ceil(Difference_In_Time / (1000 * 3600 * 24));
@@ -135,6 +163,7 @@ const Dashboard = (props) => {
 	      		document.getElementById('topic-list-box').style.display = 'block'
 	      		const data = res.data.data;
 	      		changeCnData(data)
+	      		changeShortSub(res.data.subject)
 	      		//To render the list first time after fetching
 	      		var Difference_In_Time = new Date().getTime() - startDate.getTime(); 
 				var Difference_In_Days = Math.ceil(Difference_In_Time / (1000 * 3600 * 24));
@@ -194,7 +223,7 @@ const Dashboard = (props) => {
 							
 							<div id='topic-list-box' style={{display: 'none'}}>
 								{ dayList?
-									<TopicList dayList={dayList} />:
+									<TopicList dayList={dayList} subject={shortSub} />:
 									null
 								}
 							</div>
